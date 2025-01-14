@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qwen OCR</title>
+  <title>通义千问OCR</title>
   <script id="MathJax-script" async src="js/tex-mml-chtml.js"></script>
   <style>
     * {
@@ -16,123 +16,262 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
       background: #f5f7fa;
       min-height: 100vh;
+      height: 100vh;
+      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
+      overflow: hidden;
     }
 
     .container {
       background: white;
       padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
       width: 95%;
       max-width: 1200px;
-      height: auto;
+      height: 90vh;
       display: flex;
       flex-direction: column;
+      gap: 2rem;
     }
 
     .panels-container {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 2rem;
       flex: 1;
-      margin-bottom: 1.5rem;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .panel {
-      flex: 1;
-      border: 2px dashed #e2e8f0;
-      border-radius: 8px;
+      background: #ffffff;
+      border-radius: 12px;
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       transition: all 0.3s ease;
+      height: 100%;
+      position: relative;
+      border: 2px solid #edf2f7;
+      overflow: hidden;
+    }
+
+    .upload-panel {
       background: #f8fafc;
-      min-height: 300px;
-    }
-
-    .panel:hover {
-      border-color: #3b82f6;
-      background: #f1f5f9;
-    }
-
-    .panel-title {
-      font-size: 1.1rem;
-      color: #64748b;
-      margin-bottom: 1rem;
-    }
-
-    .buttons-container {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin-top: 1rem;
-    }
-
-    .btn {
-      padding: 0.75rem 2rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
       cursor: pointer;
-      transition: all 0.3s ease;
-      background: #f1f5f9;
-      color: #1e293b;
-      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .btn:hover {
-      background: #e2e8f0;
-      transform: translateY(-1px);
+    .upload-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      transition: opacity 0.3s ease;
     }
 
     #previewImage {
       max-width: 100%;
-      max-height: 80%;
+      max-height: 100%;
       object-fit: contain;
       display: none;
+      border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #previewImage.show {
+      opacity: 1;
+      display: block;
+    }
+
+    .upload-content.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .upload-icon {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+      color: #64748b;
+    }
+
+    .upload-text {
+      color: #64748b;
+      text-align: center;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .upload-text small {
+      display: block;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      color: #94a3b8;
+    }
+
+    .result-panel {
+      background: #ffffff;
+      position: relative;
     }
 
     .result-container {
-      position: relative;
       width: 100%;
       height: 100%;
-      min-height: 200px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 1rem;
     }
 
     #result {
       width: 100%;
-      height: 100%;
+      height: auto;
       white-space: pre-wrap;
-      overflow-y: auto;
       font-size: 1rem;
-      line-height: 1.6;
+      line-height: 1.8;
       color: #334155;
+    }
+
+    .buttons-container {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--panel-bg);
+      border-radius: var(--radius-md);
+      justify-content: flex-start;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      padding-right: 0.75rem;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .button-group:last-child {
+      border-right: none;
+      padding-right: 0;
+      margin-left: auto;
+    }
+
+    .btn {
+      position: relative;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.375rem;
+      font-weight: 500;
+      min-width: 90px;
+      height: 34px;
+      white-space: nowrap;
+      overflow: hidden;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn:hover svg {
+      transform: scale(1.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #3b82f6);
+      color: white;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4338ca, #2563eb);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:active {
+      box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-secondary {
+      background: var(--bg-color);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary:active {
+      box-shadow: none;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .btn:hover::before {
+      opacity: 1;
     }
 
     #loadingSpinner {
       display: none;
       width: 40px;
       height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3b82f6;
       border-radius: 50%;
       animation: spin 1s linear infinite;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      z-index: 100;
-    }
-
-    .upload-text {
-      color: #64748b;
-      text-align: center;
-      font-size: 1rem;
     }
 
     .modal-overlay {
@@ -142,6 +281,7 @@
       right: 0;
       bottom: 0;
       background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
       display: none;
       justify-content: center;
       align-items: center;
@@ -154,22 +294,22 @@
 
     .modal {
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 2rem;
       width: 90%;
       max-width: 500px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .modal-title {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 600;
       color: #1e293b;
     }
@@ -181,9 +321,12 @@
       cursor: pointer;
       color: #64748b;
       padding: 0.5rem;
+      border-radius: 50%;
+      transition: all 0.2s ease;
     }
 
     .modal-close:hover {
+      background: #f1f5f9;
       color: #1e293b;
     }
 
@@ -195,16 +338,17 @@
       display: block;
       margin-bottom: 0.5rem;
       color: #64748b;
-      font-size: 0.9rem;
+      font-weight: 500;
     }
 
     .form-input {
       width: 100%;
-      padding: 0.75rem;
+      padding: 0.75rem 1rem;
       border: 2px solid #e2e8f0;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 1rem;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
+      background: #f8fafc;
     }
 
     .form-input:focus {
@@ -225,14 +369,16 @@
       background: #3b82f6;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 1rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
     }
 
     .save-settings:hover {
       background: #2563eb;
+      transform: translateY(-1px);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -249,31 +395,30 @@
         border-color: #334155;
       }
 
-      .panel:hover {
+      .upload-panel {
+        background: #1e293b;
+      }
+
+      .upload-panel:hover {
         border-color: #3b82f6;
         background: #1e293b;
       }
 
-      .panel-title {
-        color: #94a3b8;
-      }
-
-      .btn {
+      .result-panel {
         background: #1e293b;
-        color: #e2e8f0;
-        border-color: #334155;
       }
 
-      .btn:hover {
+      .btn-secondary {
         background: #334155;
+        color: #f1f5f9;
       }
 
-      .upload-text {
-        color: #94a3b8;
+      .btn-secondary:hover {
+        background: #475569;
       }
 
       #result {
-        color: #e2e8f0;
+        color: #f1f5f9;
       }
 
       .modal {
@@ -290,17 +435,8 @@
         color: #f1f5f9;
       }
 
-      .form-input:focus {
-        border-color: #3b82f6;
-      }
-
-      .form-label {
-        color: #94a3b8;
-      }
-
-      #loadingSpinner {
-        border-color: #334155;
-        border-top-color: #3b82f6;
+      .modal-close:hover {
+        background: #334155;
       }
     }
 
@@ -308,19 +444,314 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    @media (max-width: 768px) {
+      .buttons-container {
+        padding: 0.75rem;
+        gap: 0.75rem;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .button-group {
+        width: 100%;
+        padding-right: 0;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.75rem;
+      }
+
+      .button-group:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .btn {
+        flex: 1;
+      }
+
+      .lang-select-container {
+        flex: 1 1 100%;
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+
+      .lang-select {
+        width: 100%;
+      }
+    }
+
+    /* Toast 通知样式 */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background: #ffffff;
+      color: #1e293b;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 300px;
+      max-width: 500px;
+      animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+      pointer-events: none;
+    }
+
+    .toast.error {
+      border-left: 4px solid #ef4444;
+    }
+
+    .toast.success {
+      border-left: 4px solid #22c55e;
+    }
+
+    .toast.info {
+      border-left: 4px solid #3b82f6;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .toast {
+        background: #1e293b;
+        color: #f1f5f9;
+      }
+    }
+
+    /* 语言选择器样式 */
+    .lang-select-container {
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+      position: relative;
+    }
+
+    .lang-select {
+      appearance: none;
+      padding: 0.5rem 2rem 0.5rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--panel-bg);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      height: 38px;
+      min-width: 120px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 12px;
+    }
+
+    .lang-select:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .lang-select:hover {
+      border-color: #4f46e5;
+    }
+
+    @media (max-width: 768px) {
+      .buttons-container {
+        padding: 0.75rem;
+        gap: 0.75rem;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .button-group {
+        width: 100%;
+        padding-right: 0;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.75rem;
+      }
+
+      .button-group:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .btn {
+        flex: 1;
+      }
+
+      .lang-select-container {
+        flex: 1 1 100%;
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+
+      .lang-select {
+        width: 100%;
+      }
+    }
+
+    /* 翻译按钮组合样式 */
+    .translate-group {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .translate-btn {
+      position: relative;
+      padding-right: 2rem !important;
+      min-width: 90px !important;
+    }
+
+    .translate-toggle {
+      position: absolute !important;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 1.75rem !important;
+      min-width: auto !important;
+      padding: 0 !important;
+      border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    .translate-toggle:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+      transform: none !important;
+    }
+
+    .translate-toggle svg {
+      width: 12px;
+      height: 12px;
+      margin: 0;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .translate-toggle.active svg {
+      transform: rotate(180deg);
+    }
+
+    .translate-dropdown {
+      position: fixed;
+      bottom: 100%;
+      right: 20px;
+      margin-bottom: 10px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      min-width: 120px;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(10px);
+      visibility: hidden;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .translate-dropdown.show {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+    }
+
+    @media (max-width: 768px) {
+      .translate-dropdown {
+        position: fixed;
+        left: 20px;
+        right: 20px;
+        bottom: 80px;
+      }
+    }
+
+    .translate-dropdown-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .translate-dropdown-item:hover {
+      background: var(--bg-color);
+    }
+
+    .translate-dropdown-item.active {
+      color: var(--primary-color);
+      background: rgba(79, 70, 229, 0.08);
+      font-weight: 500;
+    }
+
+    .translate-dropdown-item.active::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--primary-color);
+    }
+
+    @media (max-width: 768px) {
+      .translate-group {
+        width: 100%;
+      }
+
+      .translate-btn {
+        flex: 1;
+      }
+
+      .translate-dropdown {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="panels-container">
-      <div class="panel" id="uploadArea">
-        <div class="upload-text" id="uploadText">
-          拖拽图片到这里，或点击上传<br>
-          支持复制粘贴图片
+      <div class="panel upload-panel" id="uploadArea">
+        <div class="upload-content" id="uploadContent">
+          <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <div class="upload-text" id="uploadText">
+            拖拽图片到这里，或点击上传
+            <small>支持复制粘贴图片</small>
+          </div>
         </div>
         <img id="previewImage">
       </div>
-      <div class="panel">
+      <div class="panel result-panel">
         <div class="result-container">
           <div id="result"></div>
           <div id="loadingSpinner"></div>
@@ -328,10 +759,75 @@
       </div>
     </div>
     <div class="buttons-container">
-      <button class="btn" id="settingsBtn">插件设置</button>
-      <button class="btn" id="retranslateBtn">重新识别</button>
-      <button class="btn" id="copyBtn">一键复制</button>
-      <button class="btn" id="clearBtn">一键清除</button>
+      <!-- 系统功能组 -->
+      <div class="button-group">
+        <button class="btn btn-secondary" id="settingsBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/>
+          </svg>
+          插件设置
+        </button>
+        <button class="btn btn-secondary" id="clearBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+          </svg>
+          一键清除
+        </button>
+      </div>
+
+      <!-- OCR功能组 -->
+      <div class="button-group">
+        <button class="btn btn-primary" id="screenshotBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
+            <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+          </svg>
+          截图识别
+        </button>
+        <button class="btn btn-primary" id="retranslateBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+            <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+          </svg>
+          重新识别
+        </button>
+      </div>
+
+      <!-- 文本处理组 -->
+      <div class="button-group">
+        <button class="btn btn-primary" id="copyBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+          </svg>
+          一键复制
+        </button>
+        <div class="translate-group">
+          <button class="btn btn-primary translate-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M4.545 6.714 4.11 8H3l1.862-5h1.284L8 8H6.833l-.435-1.286H4.545zm1.634-.736L5.5 3.956h-.049l-.679 2.022H6.18z"/>
+              <path d="M0 2a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v3h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-3H2a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2zm7.138 9.995c.193.301.402.583.63.846-.748.575-1.673 1.001-2.768 1.292.178.217.451.635.555.867 1.125-.359 2.08-.844 2.886-1.494.777.665 1.739 1.165 2.93 1.472.133-.254.414-.673.629-.89-1.125-.253-2.057-.694-2.82-1.284.681-.747 1.222-1.651 1.621-2.757H14V8h-3v1.047h.765c-.318.844-.74 1.546-1.272 2.13a6.066 6.066 0 0 1-.415-.492 1.988 1.988 0 0 1-.94.31z"/>
+            </svg>
+            翻译文本
+          </button>
+          <button class="btn btn-primary translate-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+            </svg>
+          </button>
+          <div class="translate-dropdown">
+            <div class="translate-dropdown-item" data-lang="ZH">中文</div>
+            <div class="translate-dropdown-item" data-lang="EN">英文</div>
+            <div class="translate-dropdown-item" data-lang="JA">日语</div>
+            <div class="translate-dropdown-item" data-lang="KO">韩语</div>
+            <div class="translate-dropdown-item" data-lang="FR">法语</div>
+            <div class="translate-dropdown-item" data-lang="DE">德语</div>
+            <div class="translate-dropdown-item" data-lang="ES">西班牙语</div>
+            <div class="translate-dropdown-item" data-lang="RU">俄语</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -351,9 +847,17 @@
         <label class="form-label" for="promptInput">自定义 Prompt [可选]</label>
         <textarea id="promptInput" class="form-input" rows="4" placeholder="可以自定义识别时的 Prompt，留空则使用默认设置"></textarea>
       </div>
+      <div class="form-group">
+        <label class="form-label" for="deeplxUrl">DeepLX API URL</label>
+        <input type="text" id="deeplxUrl" class="form-input" placeholder="请输入 DeepLX API 地址，例如: https://api.deeplx.org/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/translate">
+        <div class="form-help">请输入 DeepLX API 服务地址，用于文本翻译功能</div>
+      </div>
       <button class="save-settings" id="saveSettings">保存设置</button>
     </div>
   </div>
+
+  <!-- Toast 通知容器 -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <script>
     // 等待 preload.js 加载完成
@@ -379,8 +883,19 @@
       const promptInput = document.getElementById('promptInput');
       const loadingSpinner = document.getElementById('loadingSpinner');
       const clearBtn = document.getElementById('clearBtn');
+      const screenshotBtn = document.getElementById('screenshotBtn');
+      const deeplxUrl = document.getElementById('deeplxUrl');
+      
+      // 翻译相关元素
+      const translateGroup = document.querySelector('.translate-group');
+      const translateBtn = document.querySelector('.translate-btn');
+      const translateDropdown = document.querySelector('.translate-dropdown');
+      const translateItems = document.querySelectorAll('.translate-dropdown-item');
+      const translateToggle = document.querySelector('.translate-toggle');
+      let currentLang = 'ZH';
 
       let currentImageData = null;
+      let currentOcrText = null;
 
       // 从本地存储加载设置
       function loadSettings() {
@@ -388,6 +903,17 @@
         if (settings) {
           apiToken.value = settings.tokens.join(',');
           promptInput.value = settings.prompt || '';
+          deeplxUrl.value = settings.deeplxUrl || '';
+          // 设置当前语言
+          currentLang = settings.targetLang || 'ZH';
+          // 更新语言选择器的选中状态
+          translateItems.forEach(item => {
+            if (item.dataset.lang === currentLang) {
+              item.classList.add('active');
+            } else {
+              item.classList.remove('active');
+            }
+          });
         }
       }
 
@@ -395,10 +921,89 @@
       function saveSettingsToStorage() {
         const settings = {
           tokens: apiToken.value.trim(),
-          prompt: promptInput.value.trim()
+          prompt: promptInput.value.trim(),
+          deeplxUrl: deeplxUrl.value.trim(),
+          targetLang: currentLang
         };
         window.services.saveSettings(settings);
         settingsModal.classList.remove('show');
+        showToast('设置已保存', 'success');
+      }
+
+      // Toast 通知功能
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        // 根据类型选择图标
+        let icon = '';
+        switch(type) {
+          case 'error':
+            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>';
+            break;
+          case 'success':
+            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>';
+            break;
+          default:
+            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>';
+        }
+        
+        toast.innerHTML = `${icon}<span>${message}</span>`;
+        
+        document.getElementById('toastContainer').appendChild(toast);
+        
+        // 3秒后移除
+        setTimeout(() => {
+          toast.remove();
+        }, 3000);
+      }
+
+      // 翻译功能
+      async function translateText() {
+        if (!currentOcrText) {
+          showToast('请先进行OCR识别', 'error');
+          return;
+        }
+
+        const settings = window.services.getSettings();
+        if (!settings.deeplxUrl) {
+          showToast('请先设置DeepLX API地址', 'error');
+          settingsModal.classList.add('show');
+          return;
+        }
+
+        loadingSpinner.style.display = 'block';
+        try {
+          const response = await fetch(settings.deeplxUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              text: currentOcrText,
+              source_lang: 'AUTO',
+              target_lang: settings.targetLang || 'ZH'
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('翻译请求失败');
+          }
+
+          const data = await response.json();
+          if (data.code === 200 && data.data) {
+            resultDiv.innerHTML = data.data;
+            // 如果有数学公式，重新渲染
+            MathJax.typesetPromise([resultDiv]);
+            showToast('翻译完成', 'success');
+          } else {
+            throw new Error(data.message || '翻译失败');
+          }
+        } catch (error) {
+          showToast(`翻译失败: ${error.message}`, 'error');
+        } finally {
+          loadingSpinner.style.display = 'none';
+        }
       }
 
       // 处理图片识别
@@ -407,6 +1012,7 @@
         
         const token = window.services.getRandomToken();
         if (!token) {
+          showToast('请先设置API Token', 'error');
           settingsModal.classList.add('show');
           return;
         }
@@ -415,10 +1021,8 @@
         
         // 显示图片预览并隐藏提示文字
         previewImage.src = imageData;
-        previewImage.style.display = 'block';
-        if (uploadText) {
-          uploadText.style.display = 'none';
-        }
+        previewImage.classList.add('show');
+        document.getElementById('uploadContent').classList.add('hide');
         resultDiv.innerHTML = '';
         loadingSpinner.style.display = 'block';
 
@@ -480,6 +1084,7 @@
 
           const recognizeData = await recognizeResponse.json();
           const result = recognizeData.choices[0]?.message?.content || '识别失败';
+          currentOcrText = result; // 保存OCR结果
 
           // 处理结果
           resultDiv.innerHTML = result
@@ -493,7 +1098,8 @@
           MathJax.typesetPromise([resultDiv]);
 
         } catch (error) {
-          resultDiv.textContent = '处理失败: ' + error.message;
+          showToast(`处理失败: ${error.message}`, 'error');
+          resultDiv.textContent = '';
         } finally {
           loadingSpinner.style.display = 'none';
         }
@@ -527,20 +1133,16 @@
 
       // 点击上传
       uploadArea.addEventListener('click', () => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              processImage(e.target.result);
-            };
-            reader.readAsDataURL(file);
-          }
-        };
-        input.click();
+        const result = window.utools.showOpenDialog({
+          filters: [{ name: '图片文件', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp'] }],
+          properties: ['openFile']
+        });
+        
+        if (result && result.length > 0) {
+          const imagePath = result[0];
+          const imageData = window.services.readImageAsBase64(imagePath);
+          processImage(imageData);
+        }
       });
 
       // 粘贴处理
@@ -603,13 +1205,114 @@
       clearBtn.addEventListener('click', () => {
         currentImageData = null;
         previewImage.src = '';
-        previewImage.style.display = 'none';
-        uploadText.style.display = 'block';
+        previewImage.classList.remove('show');
+        document.getElementById('uploadContent').classList.remove('hide');
         resultDiv.innerHTML = '';
       });
 
       // 初始化时加载设置
       loadSettings();
+
+      // 截图功能
+      screenshotBtn.addEventListener('click', () => {
+        // 最小化窗口，以免影响截图
+        window.utools.hideMainWindow();
+        // 延迟一小段时间，确保窗口已经隐藏
+        setTimeout(() => {
+          // 调用截图
+          window.utools.screenCapture((imageData) => {
+            // 如果有截图结果，显示主窗口并处理图片
+            if (imageData) {
+              window.utools.showMainWindow();
+              processImage(imageData);
+            } else {
+              // 如果用户取消截图，也显示主窗口
+              window.utools.showMainWindow();
+            }
+          });
+        }, 100);
+      });
+
+      // 初始化选中状态
+      translateItems[0].classList.add('active');
+
+      // 点击翻译按钮
+      translateBtn.addEventListener('click', async () => {
+        if (!currentOcrText) {
+          showToast('请先进行OCR识别', 'error');
+          return;
+        }
+
+        const settings = window.services.getSettings();
+        if (!settings.deeplxUrl) {
+          showToast('请先设置DeepLX API地址', 'error');
+          settingsModal.classList.add('show');
+          return;
+        }
+
+        loadingSpinner.style.display = 'block';
+        try {
+          const response = await fetch(settings.deeplxUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              text: currentOcrText,
+              source_lang: 'AUTO',
+              target_lang: currentLang
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('翻译请求失败');
+          }
+
+          const data = await response.json();
+          if (data.code === 200 && data.data) {
+            resultDiv.innerHTML = data.data;
+            // 如果有数学公式，重新渲染
+            MathJax.typesetPromise([resultDiv]);
+            showToast('翻译完成', 'success');
+          } else {
+            throw new Error(data.message || '翻译失败');
+          }
+        } catch (error) {
+          showToast(`翻译失败: ${error.message}`, 'error');
+        } finally {
+          loadingSpinner.style.display = 'none';
+        }
+      });
+
+      // 点击语言选项
+      translateItems.forEach(item => {
+        item.addEventListener('click', () => {
+          translateItems.forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          currentLang = item.dataset.lang;
+          translateDropdown.classList.remove('show');
+          translateToggle.classList.remove('active');
+        });
+      });
+
+      // 点击下拉按钮和点击外部关闭
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.translate-toggle')) {
+          const translateBtn = document.querySelector('.translate-btn');
+          const btnRect = translateBtn.getBoundingClientRect();
+          const dropdown = document.querySelector('.translate-dropdown');
+          
+          // 设置下拉菜单位置
+          dropdown.style.bottom = (window.innerHeight - btnRect.top + 10) + 'px';
+          dropdown.style.right = (window.innerWidth - btnRect.right) + 'px';
+          
+          dropdown.classList.toggle('show');
+          translateToggle.classList.toggle('active');
+        } else if (!e.target.closest('.translate-dropdown')) {
+          translateDropdown.classList.remove('show');
+          translateToggle.classList.remove('active');
+        }
+      });
 
       // uTools 插件入口
       window.exports = {
