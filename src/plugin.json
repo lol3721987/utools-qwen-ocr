@@ -1,7 +1,7 @@
 {
-  "name": "通义千问OCR",
-  "version": "0.0.1",
-  "pluginName": "通义千问OCR",
+  "name": "通义识文",
+  "version": "1.0.0",
+  "pluginName": "通义识文",
   "description": "基于通义千问大模型的智能OCR识别工具",
   "main": "index.html",
   "logo": "logo.png",
@@ -9,9 +9,9 @@
   "features": [
     {
       "code": "tyqw_qwen_ocr",
-      "explain": "通义千问 OCR 识别",
+      "explain": "通义识文",
       "cmds": [
-        "qwen",
+        "通义识文",
         "ocr",
         "识别",
         "截图文字识别",
