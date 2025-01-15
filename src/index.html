@@ -147,6 +147,13 @@
       font-size: 1rem;
       line-height: 1.8;
       color: #334155;
+      outline: none;
+      min-height: 100px;
+    }
+
+    #result:focus {
+      outline: none;
+      border-color: #3b82f6;
     }
 
     .buttons-container {
@@ -881,7 +888,7 @@
       </div>
       <div class="panel result-panel">
         <div class="result-container">
-          <div id="result"></div>
+          <div id="result" contenteditable="true" spellcheck="false"></div>
           <div id="loadingSpinner"></div>
         </div>
       </div>
@@ -1181,8 +1188,11 @@
 
       // 翻译功能
       async function translateText() {
-        if (!currentOcrText) {
-          showToast('请先进行OCR识别', 'error');
+        // 使用当前编辑后的文本而不是 OCR 原始文本
+        const textToTranslate = resultDiv.textContent || '';
+        
+        if (!textToTranslate.trim()) {
+          showToast('请先进行OCR识别或输入文本', 'error');
           return;
         }
 
@@ -1212,7 +1222,7 @@
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                text: currentOcrText,
+                text: textToTranslate,
                 source_lang: 'AUTO',
                 target_lang: currentLang
               }),
@@ -1229,7 +1239,7 @@
               throw new Error(data.message || '翻译失败');
             }
           } else if (service === 'openai') {
-            translatedText = await window.services.callOpenAIAPI(currentOcrText, currentLang);
+            translatedText = await window.services.callOpenAIAPI(textToTranslate, currentLang);
           }
 
           resultDiv.innerHTML = translatedText;
@@ -1476,8 +1486,11 @@
 
       // 点击翻译按钮
       translateBtn.addEventListener('click', async () => {
-        if (!currentOcrText) {
-          showToast('请先进行OCR识别', 'error');
+        // 使用当前编辑框中的文本而不是 OCR 文本
+        const textToTranslate = resultDiv.textContent || '';
+        
+        if (!textToTranslate.trim()) {
+          showToast('请先进行OCR识别或输入文本', 'error');
           return;
         }
 
@@ -1507,7 +1520,7 @@
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                text: currentOcrText,
+                text: textToTranslate,
                 source_lang: 'AUTO',
                 target_lang: currentLang
               }),
@@ -1524,7 +1537,7 @@
               throw new Error(data.message || '翻译失败');
             }
           } else if (service === 'openai') {
-            translatedText = await window.services.callOpenAIAPI(currentOcrText, currentLang);
+            translatedText = await window.services.callOpenAIAPI(textToTranslate, currentLang);
           }
 
           resultDiv.innerHTML = translatedText;
