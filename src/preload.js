@@ -35,8 +35,9 @@ window.addEventListener('DOMContentLoaded', () => {
           deeplxUrl: '',
           openaiUrl: '',
           openaiToken: '',
-          openaiModel: 'gpt-3.5-turbo',
+          openaiModel: 'gpt-4-vision-preview',
           translationService: 'deeplx',
+          ocrService: 'qwen',
           targetLang: 'ZH',
           translatePrompt: ''
         }
@@ -48,8 +49,9 @@ window.addEventListener('DOMContentLoaded', () => {
           deeplxUrl: '',
           openaiUrl: '',
           openaiToken: '',
-          openaiModel: 'gpt-3.5-turbo',
+          openaiModel: 'gpt-4-vision-preview',
           translationService: 'deeplx',
+          ocrService: 'qwen',
           targetLang: 'ZH',
           translatePrompt: ''
         }
@@ -76,8 +78,9 @@ window.addEventListener('DOMContentLoaded', () => {
           deeplxUrl: settings.deeplxUrl || '',
           openaiUrl: settings.openaiUrl || '',
           openaiToken: settings.openaiToken || '',
-          openaiModel: settings.openaiModel || 'gpt-3.5-turbo',
+          openaiModel: settings.openaiModel || 'gpt-4-vision-preview',
           translationService: settings.translationService || 'deeplx',
+          ocrService: settings.ocrService || 'qwen',
           targetLang: settings.targetLang || 'ZH',
           translatePrompt: settings.translatePrompt || ''
         }
@@ -148,7 +151,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // OpenAI 翻译功能
     callOpenAIAPI: async (text, targetLang) => {
       const settings = utools.dbStorage.getItem('qwen_ocr_settings') || {};
-      const apiUrl = settings.openaiUrl || 'https://api.openai.com/v1/chat/completions';
+      const apiUrl = settings.openaiUrl + '/v1/chat/completions' || 'https://api.openai.com/v1/chat/completions';
       const apiToken = settings.openaiToken;
       const model = settings.openaiModel || 'gpt-3.5-turbo';
 
