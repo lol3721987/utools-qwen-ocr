@@ -31,11 +31,28 @@ window.addEventListener('DOMContentLoaded', () => {
       try {
         return utools.dbStorage.getItem('qwen_ocr_settings') || {
           tokens: [],
-          prompt: ''
+          prompt: '',
+          deeplxUrl: '',
+          openaiUrl: '',
+          openaiToken: '',
+          openaiModel: 'gpt-3.5-turbo',
+          translationService: 'deeplx',
+          targetLang: 'ZH',
+          translatePrompt: ''
         }
       } catch (error) {
         console.error('获取设置失败:', error)
-        return { tokens: [], prompt: '' }
+        return { 
+          tokens: [], 
+          prompt: '',
+          deeplxUrl: '',
+          openaiUrl: '',
+          openaiToken: '',
+          openaiModel: 'gpt-3.5-turbo',
+          translationService: 'deeplx',
+          targetLang: 'ZH',
+          translatePrompt: ''
+        }
       }
     },
 
@@ -51,6 +68,18 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         if (!Array.isArray(settings.tokens)) {
           settings.tokens = []
+        }
+        // 确保其他字段存在
+        settings = {
+          tokens: settings.tokens || [],
+          prompt: settings.prompt || '',
+          deeplxUrl: settings.deeplxUrl || '',
+          openaiUrl: settings.openaiUrl || '',
+          openaiToken: settings.openaiToken || '',
+          openaiModel: settings.openaiModel || 'gpt-3.5-turbo',
+          translationService: settings.translationService || 'deeplx',
+          targetLang: settings.targetLang || 'ZH',
+          translatePrompt: settings.translatePrompt || ''
         }
         utools.dbStorage.setItem('qwen_ocr_settings', settings)
       } catch (error) {
@@ -114,7 +143,65 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error('读取图片失败:', error)
         throw error
       }
+    },
+
+    // OpenAI 翻译功能
+    callOpenAIAPI: async (text, targetLang) => {
+      const settings = utools.dbStorage.getItem('qwen_ocr_settings') || {};
+      const apiUrl = settings.openaiUrl || 'https://api.openai.com/v1/chat/completions';
+      const apiToken = settings.openaiToken;
+      const model = settings.openaiModel || 'gpt-3.5-turbo';
+
+      if (!apiToken) {
+        throw new Error('请先配置 OpenAI API Token');
+      }
+
+      let prompt = settings.translatePrompt || '请将以下文本翻译成{{lang}}，保持原文的格式和数学公式：\n\n{{text}}';
+      prompt = prompt.replace('{{text}}', text).replace('{{lang}}', getLangName(targetLang));
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiToken}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: 'system',
+              content: '你是一个专业的翻译助手。你的任务是准确翻译用户提供的文本，保持原文的格式，特别是数学公式和代码块的格式。只返回翻译后的文本，不要添加任何解释或其他内容。'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API 请求失败: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
     }
+  }
+
+  // 获取语言名称
+  function getLangName(langCode) {
+    const langMap = {
+      'ZH': '中文',
+      'EN': '英文',
+      'JA': '日语',
+      'KO': '韩语',
+      'FR': '法语',
+      'DE': '德语',
+      'ES': '西班牙语',
+      'RU': '俄语'
+    };
+    return langMap[langCode] || langCode;
   }
 
   // 定期清理临时文件

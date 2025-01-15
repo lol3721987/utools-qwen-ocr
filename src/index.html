@@ -734,6 +734,134 @@
         width: 100%;
       }
     }
+
+    /* 单选按钮组样式 */
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
+    .radio-label input[type="radio"] {
+      appearance: none;
+      width: 1.2rem;
+      height: 1.2rem;
+      border: 2px solid #4f46e5;
+      border-radius: 50%;
+      margin: 0;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .radio-label input[type="radio"]:checked::after {
+      content: '';
+      position: absolute;
+      width: 0.7rem;
+      height: 0.7rem;
+      background: #4f46e5;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .radio-label:hover input[type="radio"] {
+      border-color: #6366f1;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .radio-label {
+        color: #f1f5f9;
+      }
+    }
+
+    /* 设置面板样式优化 */
+    .settings-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .settings-container .form-group {
+      margin-bottom: 0;
+    }
+
+    .settings-container .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .settings-divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: var(--border-color);
+      margin: 0.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .settings-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .modal {
+      width: 800px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .form-help {
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+
+    /* 添加新的样式 */
+    .settings-row {
+      display: flex;
+      gap: 1.5rem;
+      grid-column: 1 / -1;
+    }
+
+    .half-width {
+      flex: 1;
+    }
+
+    select.form-input {
+      appearance: none;
+      padding-right: 2rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 12px;
+    }
+
+    input[type="number"].form-input {
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"].form-input::-webkit-outer-spin-button,
+    input[type="number"].form-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -838,19 +966,66 @@
         <div class="modal-title">插件设置</div>
         <button class="modal-close" id="closeSettings">&times;</button>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="apiToken">API Token</label>
-        <input type="text" id="apiToken" class="form-input" placeholder="请输入您的 API Token，多个 Token 请用英文逗号分隔">
-        <div class="form-help">请输入通义千问API Token，多个Token请用英文逗号分隔，系统会随机选择一个使用</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="promptInput">自定义 Prompt [可选]</label>
-        <textarea id="promptInput" class="form-input" rows="4" placeholder="可以自定义识别时的 Prompt，留空则使用默认设置"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="deeplxUrl">DeepLX API URL</label>
-        <input type="text" id="deeplxUrl" class="form-input" placeholder="请输入 DeepLX API 地址，例如: https://api.deeplx.org/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/translate">
-        <div class="form-help">请输入 DeepLX API 服务地址，用于文本翻译功能</div>
+      <div class="settings-container">
+        <!-- OCR设置 -->
+        <div class="form-group full-width">
+          <label class="form-label" for="apiToken">通义千问 API Token</label>
+          <input type="text" id="apiToken" class="form-input" placeholder="请输入您的 API Token，多个 Token 请用英文逗号分隔">
+          <div class="form-help">多个Token请用英文逗号分隔，系统会随机选择一个使用</div>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label" for="promptInput">OCR 自定义 Prompt [可选]</label>
+          <textarea id="promptInput" class="form-input" rows="3" placeholder="可以自定义识别时的 Prompt，留空则使用默认设置"></textarea>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <!-- 翻译服务选择 -->
+        <div class="form-group full-width">
+          <label class="form-label">翻译服务</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="translationService" value="deeplx" checked>
+              DeepLX
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="translationService" value="openai">
+              OpenAI
+            </label>
+          </div>
+        </div>
+
+        <!-- DeepLX 设置 -->
+        <div class="form-group full-width">
+          <label class="form-label" for="deeplxUrl">DeepLX API URL</label>
+          <input type="text" id="deeplxUrl" class="form-input" placeholder="请输入 DeepLX API 地址">
+          <div class="form-help">DeepLX API 服务地址</div>
+        </div>
+
+        <!-- OpenAI 设置 -->
+        <div class="form-group full-width">
+          <label class="form-label" for="openaiUrl">OpenAI API URL</label>
+          <input type="text" id="openaiUrl" class="form-input" placeholder="请输入 OpenAI API 地址">
+          <div class="form-help">OpenAI API 服务地址</div>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label" for="openaiToken">OpenAI API Token</label>
+          <input type="text" id="openaiToken" class="form-input" placeholder="请输入 OpenAI API Token">
+          <div class="form-help">OpenAI API Token</div>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label" for="openaiModel">OpenAI 模型</label>
+          <input type="text" id="openaiModel" class="form-input" placeholder="请输入模型名称，例如：gpt-3.5-turbo" value="gpt-3.5-turbo">
+          <div class="form-help">输入要使用的 OpenAI 模型名称</div>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label" for="translatePrompt">翻译 Prompt [可选]</label>
+          <textarea id="translatePrompt" class="form-input" rows="3" placeholder="可以自定义翻译时的 Prompt，留空则使用默认设置"></textarea>
+          <div class="form-help">自定义翻译时的 Prompt，可以使用 {{text}} 作为占位符表示要翻译的文本，{{lang}} 作为目标语言占位符</div>
+        </div>
       </div>
       <button class="save-settings" id="saveSettings">保存设置</button>
     </div>
@@ -885,6 +1060,11 @@
       const clearBtn = document.getElementById('clearBtn');
       const screenshotBtn = document.getElementById('screenshotBtn');
       const deeplxUrl = document.getElementById('deeplxUrl');
+      const openaiUrl = document.getElementById('openaiUrl');
+      const openaiToken = document.getElementById('openaiToken');
+      const openaiModel = document.getElementById('openaiModel');
+      const translatePrompt = document.getElementById('translatePrompt');
+      const translationServiceRadios = document.getElementsByName('translationService');
       
       // 翻译相关元素
       const translateGroup = document.querySelector('.translate-group');
@@ -896,39 +1076,6 @@
 
       let currentImageData = null;
       let currentOcrText = null;
-
-      // 从本地存储加载设置
-      function loadSettings() {
-        const settings = window.services.getSettings();
-        if (settings) {
-          apiToken.value = settings.tokens.join(',');
-          promptInput.value = settings.prompt || '';
-          deeplxUrl.value = settings.deeplxUrl || '';
-          // 设置当前语言
-          currentLang = settings.targetLang || 'ZH';
-          // 更新语言选择器的选中状态
-          translateItems.forEach(item => {
-            if (item.dataset.lang === currentLang) {
-              item.classList.add('active');
-            } else {
-              item.classList.remove('active');
-            }
-          });
-        }
-      }
-
-      // 保存设置到本地存储
-      function saveSettingsToStorage() {
-        const settings = {
-          tokens: apiToken.value.trim(),
-          prompt: promptInput.value.trim(),
-          deeplxUrl: deeplxUrl.value.trim(),
-          targetLang: currentLang
-        };
-        window.services.saveSettings(settings);
-        settingsModal.classList.remove('show');
-        showToast('设置已保存', 'success');
-      }
 
       // Toast 通知功能
       function showToast(message, type = 'info') {
@@ -958,6 +1105,80 @@
         }, 3000);
       }
 
+      // 从本地存储加载设置
+      function loadSettings() {
+        const settings = window.services.getSettings();
+        if (!settings) return;
+
+        // 安全地设置值的辅助函数
+        const safeSetValue = (element, value) => {
+          if (element) element.value = value;
+        };
+
+        safeSetValue(apiToken, settings.tokens.join(','));
+        safeSetValue(promptInput, settings.prompt || '');
+        safeSetValue(deeplxUrl, settings.deeplxUrl || '');
+        safeSetValue(openaiUrl, settings.openaiUrl || '');
+        safeSetValue(openaiToken, settings.openaiToken || '');
+        safeSetValue(openaiModel, settings.openaiModel || 'gpt-3.5-turbo');
+        safeSetValue(translatePrompt, settings.translatePrompt || '');
+
+        // 设置翻译服务
+        const service = settings.translationService || 'deeplx';
+        if (translationServiceRadios) {
+          Array.from(translationServiceRadios).forEach(radio => {
+            if (radio) radio.checked = radio.value === service;
+          });
+        }
+
+        // 设置当前语言
+        currentLang = settings.targetLang || 'ZH';
+        
+        // 更新语言选择器的选中状态
+        if (translateItems) {
+          translateItems.forEach(item => {
+            if (item && item.dataset.lang === currentLang) {
+              item.classList.add('active');
+            } else if (item) {
+              item.classList.remove('active');
+            }
+          });
+        }
+      }
+
+      // 保存设置到本地存储
+      function saveSettingsToStorage() {
+        try {
+          const selectedRadio = document.querySelector('input[name="translationService"]:checked');
+          const selectedService = selectedRadio ? selectedRadio.value : 'deeplx';
+
+          // 安全地获取值的辅助函数
+          const safeGetValue = (elementId) => {
+            const element = document.getElementById(elementId);
+            return element ? element.value.trim() : '';
+          };
+
+          const settings = {
+            tokens: safeGetValue('apiToken'),
+            prompt: safeGetValue('promptInput'),
+            deeplxUrl: safeGetValue('deeplxUrl'),
+            openaiUrl: safeGetValue('openaiUrl'),
+            openaiToken: safeGetValue('openaiToken'),
+            openaiModel: safeGetValue('openaiModel') || 'gpt-3.5-turbo',
+            translationService: selectedService,
+            targetLang: currentLang || 'ZH',
+            translatePrompt: safeGetValue('translatePrompt')
+          };
+
+          window.services.saveSettings(settings);
+          if (settingsModal) settingsModal.classList.remove('show');
+          showToast('设置已保存', 'success');
+        } catch (error) {
+          console.error('保存设置失败:', error);
+          showToast('保存设置失败: ' + error.message, 'error');
+        }
+      }
+
       // 翻译功能
       async function translateText() {
         if (!currentOcrText) {
@@ -966,40 +1187,57 @@
         }
 
         const settings = window.services.getSettings();
-        if (!settings.deeplxUrl) {
+        const service = settings.translationService || 'deeplx';
+
+        if (service === 'deeplx' && !settings.deeplxUrl) {
           showToast('请先设置DeepLX API地址', 'error');
+          settingsModal.classList.add('show');
+          return;
+        }
+
+        if (service === 'openai' && (!settings.openaiUrl || !settings.openaiToken)) {
+          showToast('请先设置OpenAI API配置', 'error');
           settingsModal.classList.add('show');
           return;
         }
 
         loadingSpinner.style.display = 'block';
         try {
-          const response = await fetch(settings.deeplxUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              text: currentOcrText,
-              source_lang: 'AUTO',
-              target_lang: settings.targetLang || 'ZH'
-            }),
-          });
+          let translatedText;
+          
+          if (service === 'deeplx') {
+            const response = await fetch(settings.deeplxUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                text: currentOcrText,
+                source_lang: 'AUTO',
+                target_lang: currentLang
+              }),
+            });
 
-          if (!response.ok) {
-            throw new Error('翻译请求失败');
+            if (!response.ok) {
+              throw new Error('翻译请求失败');
+            }
+
+            const data = await response.json();
+            if (data.code === 200 && data.data) {
+              translatedText = data.data;
+            } else {
+              throw new Error(data.message || '翻译失败');
+            }
+          } else if (service === 'openai') {
+            translatedText = await window.services.callOpenAIAPI(currentOcrText, currentLang);
           }
 
-          const data = await response.json();
-          if (data.code === 200 && data.data) {
-            resultDiv.innerHTML = data.data;
-            // 如果有数学公式，重新渲染
-            MathJax.typesetPromise([resultDiv]);
-            showToast('翻译完成', 'success');
-          } else {
-            throw new Error(data.message || '翻译失败');
-          }
+          resultDiv.innerHTML = translatedText;
+          // 如果有数学公式，重新渲染
+          MathJax.typesetPromise([resultDiv]);
+          showToast(`使用 ${service === 'deeplx' ? 'DeepLX' : 'OpenAI'} 翻译完成`, 'success');
         } catch (error) {
+          console.error('Translation error:', error);
           showToast(`翻译失败: ${error.message}`, 'error');
         } finally {
           loadingSpinner.style.display = 'none';
@@ -1244,40 +1482,57 @@
         }
 
         const settings = window.services.getSettings();
-        if (!settings.deeplxUrl) {
+        const service = settings.translationService || 'deeplx';
+
+        if (service === 'deeplx' && !settings.deeplxUrl) {
           showToast('请先设置DeepLX API地址', 'error');
+          settingsModal.classList.add('show');
+          return;
+        }
+
+        if (service === 'openai' && (!settings.openaiUrl || !settings.openaiToken)) {
+          showToast('请先设置OpenAI API配置', 'error');
           settingsModal.classList.add('show');
           return;
         }
 
         loadingSpinner.style.display = 'block';
         try {
-          const response = await fetch(settings.deeplxUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              text: currentOcrText,
-              source_lang: 'AUTO',
-              target_lang: currentLang
-            }),
-          });
+          let translatedText;
+          
+          if (service === 'deeplx') {
+            const response = await fetch(settings.deeplxUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                text: currentOcrText,
+                source_lang: 'AUTO',
+                target_lang: currentLang
+              }),
+            });
 
-          if (!response.ok) {
-            throw new Error('翻译请求失败');
+            if (!response.ok) {
+              throw new Error('翻译请求失败');
+            }
+
+            const data = await response.json();
+            if (data.code === 200 && data.data) {
+              translatedText = data.data;
+            } else {
+              throw new Error(data.message || '翻译失败');
+            }
+          } else if (service === 'openai') {
+            translatedText = await window.services.callOpenAIAPI(currentOcrText, currentLang);
           }
 
-          const data = await response.json();
-          if (data.code === 200 && data.data) {
-            resultDiv.innerHTML = data.data;
-            // 如果有数学公式，重新渲染
-            MathJax.typesetPromise([resultDiv]);
-            showToast('翻译完成', 'success');
-          } else {
-            throw new Error(data.message || '翻译失败');
-          }
+          resultDiv.innerHTML = translatedText;
+          // 如果有数学公式，重新渲染
+          MathJax.typesetPromise([resultDiv]);
+          showToast(`使用 ${service === 'deeplx' ? 'DeepLX' : 'OpenAI'} 翻译完成`, 'success');
         } catch (error) {
+          console.error('Translation error:', error);
           showToast(`翻译失败: ${error.message}`, 'error');
         } finally {
           loadingSpinner.style.display = 'none';
